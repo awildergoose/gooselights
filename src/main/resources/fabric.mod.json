@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "gooselights",
+	"version": "${version}",
+	"name": "Gooselights",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"awildergoose"
+	],
+	"contact": {
+		"sources": "https://github.com/awildergoose/gooselights",
+		"issues": "https://github.com/awildergoose/gooselights/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/gooselights/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"awildgoose.gooselights.GooseLights"
+		],
+		"client": [
+			"awildgoose.gooselights.GooseLightsClient"
+		]
+	},
+	"mixins": [
+		"gooselights.mixins.json",
+		{
+			"config": "gooselights.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.1",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
