@@ -18,9 +18,9 @@ import org.joml.Vector3f;
 import java.awt.*;
 
 public class GooseLightsClient implements ClientModInitializer {
-	private final Light s = new Light(
+	private final Light light = new Light(
 			Vec3d.ZERO,
-			10,
+			100f,
 			20f,
 			Color.WHITE,
 			false
@@ -33,7 +33,6 @@ public class GooseLightsClient implements ClientModInitializer {
 		Framebuffer fb = mc.getFramebuffer();
 		int fbWidth = fb.viewportWidth;
 		int fbHeight = fb.viewportHeight;
-
 		Vec3d camPos = cam.getPos();
 		Quaternionf camRot = cam.getRotation();
 
@@ -43,16 +42,14 @@ public class GooseLightsClient implements ClientModInitializer {
 				(float)(light.position.z - camPos.z)
 		);
 
-		camRot.conjugate().transform(rel);
+		Vector3f camForward = new Vector3f(0, 0, -1);
+		camRot.transform(camForward);
 
-		Vector3f forward = cam.getHorizontalPlane();
-		float z_cam = rel.dot(forward);
-
-		if (light.type == LightType.SPOT) {
-			Vector3f toCamera = new Vector3f(-rel.x, -rel.y, -rel.z).normalize();
-			float cosAngle = toCamera.dot(light.direction);
-			if (cosAngle < Math.cos(light.coneAngle)) return null;
+		if (rel.dot(camForward) <= 0) {
+			return null;
 		}
+
+		camRot.conjugate().transform(rel);
 
 		float fov = (float)Math.toRadians(mc.options.getFov().getValue());
 		float aspect = fbWidth / (float)fbHeight;
@@ -63,15 +60,8 @@ public class GooseLightsClient implements ClientModInitializer {
 		float px = (ndcX * 0.5f + 0.5f) * fbWidth;
 		float py = (ndcY * 0.5f + 0.5f) * fbHeight;
 
-		if (px < 0 || px > fbWidth || py < 0 || py > fbHeight) return null;
-
-		float screenRadius;
-		if (light.type == LightType.OMNI) {
-			screenRadius = light.radius / Math.max(z_cam, 0.1f);
-		} else {
-			float distance = rel.length();
-			screenRadius = (float)(Math.tan(light.coneAngle) * distance);
-		}
+		float screenRadius = light.type == LightType.OMNI ? light.radius / Math.max(rel.dot(camForward), 0.1f)
+				: (float)(Math.tan(light.coneAngle/2) * rel.length());
 
 		return new Vec3d(px, py, screenRadius);
 	}
@@ -84,19 +74,34 @@ public class GooseLightsClient implements ClientModInitializer {
 			MatrixStack matrices = context.matrixStack();
 
 			if (matrices != null) {
-				Vec3d screenPos = projectToScreen(s);
+				Vec3d screenPos = projectToScreen(light);
 
 				if (screenPos != null) {
+					float lightType = light.type == LightType.SPOT ? 1f : 0f;
+					float bloom = light.bloom ? 1f : 0f;
+
 					renderer.render(
-							new Vector3f((float) screenPos.x, (float) screenPos.y, 0),
-							s.color, s.radius, s.brightness
+							new Vector3f((float)screenPos.x, (float)screenPos.y, 0),
+							light.color,
+							light.radius,
+							light.brightness,
+							lightType,
+							bloom
 					);
 				}
 			}
 
-			s.position = new Vec3d(0.5, -60, 0.5);
+			light.position = new Vec3d(0.5, -60, 0.5);
+			light.setColor(
+					Color.getHSBColor(
+							 360,
+							1,
+							1
+					)
+			);
+			light.brightness = 10;
 		});
 
-		LightManager.addLight(s);
+		LightManager.addLight(light);
 	}
 }

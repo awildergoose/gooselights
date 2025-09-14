@@ -57,13 +57,13 @@ public class LightRenderer {
                 .createBuffer(() -> "Fullscreen quad indices", indexData.remaining(), indexData);
     }
 
-    public void render(Vector3f lightScreenPos, Vector3f lightColor, float radius, float brightness) {
+    public void render(Vector3f lightScreenPos, Vector3f lightColor, float radius, float brightness, float lightType, float bloom) {
         MinecraftClient mc = MinecraftClient.getInstance();
         var fb = mc.getFramebuffer();
         var colorView = fb.getColorAttachmentView();
         var depthView = fb.getDepthAttachmentView();
 
-        GpuBufferSlice uniformSlice = writeUniform(lightScreenPos, lightColor, radius, brightness, fb.viewportWidth, fb.viewportHeight);
+        GpuBufferSlice uniformSlice = writeUniform(lightScreenPos, lightColor, radius, brightness, fb.viewportWidth, fb.viewportHeight, lightType, bloom);
 
         try (RenderPass pass = RenderSystem.getDevice()
                 .createCommandEncoder()
@@ -80,13 +80,28 @@ public class LightRenderer {
         }
     }
 
-    private static GpuBufferSlice writeUniform(Vector3f screenPos, Vector3f color, float radius, float brightness, float fbWidth, float fbHeight) {
+    private static GpuBufferSlice writeUniform(Vector3f screenPos, Vector3f color, float radius, float brightness, float fbWidth, float fbHeight, float lightType, float bloom) {
         ByteBuffer buf = ByteBuffer.allocateDirect(48).order(ByteOrder.nativeOrder());
 
-        buf.putFloat(screenPos.x).putFloat(screenPos.y).putFloat(0f).putFloat(radius);
-        buf.putFloat(color.x).putFloat(color.y).putFloat(color.z).putFloat(brightness);
-        buf.putFloat(fbWidth).putFloat(fbHeight);
-        buf.putFloat(0f).putFloat(0f); // padding for std140
+// vec4 LightPosRadius
+        buf.putFloat(screenPos.x);
+        buf.putFloat(screenPos.y);
+        buf.putFloat(radius);
+        buf.putFloat(lightType);
+
+// vec4 LightColorBright
+        buf.putFloat(color.x);
+        buf.putFloat(color.y);
+        buf.putFloat(color.z);
+        buf.putFloat(brightness);
+
+// vec2 ScreenSize
+        buf.putFloat(fbWidth);
+        buf.putFloat(fbHeight);
+
+// float Bloom + padding
+        buf.putFloat(bloom);
+        buf.putFloat(0f);
 
         buf.flip();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Light UBO", buf.remaining(), buf);
