@@ -26,6 +26,8 @@ public class Light {
      */
     public Light(Vec3d position, float radius, float brightness, Color color, boolean bloom) {
         this.position = position;
+        this.direction = new Vector3f(0, 0, 0);
+        this.coneAngle = 0;
         this.radius = radius;
         this.brightness = brightness;
         this.setColor(color);

@@ -1,5 +1,7 @@
 package awildgoose.gooselights.render;
 
+import awildgoose.gooselights.lights.Light;
+import awildgoose.gooselights.lights.LightType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.BlendFunction;
@@ -10,7 +12,9 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gl.UniformType;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexFormats;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
@@ -57,13 +61,30 @@ public class LightRenderer {
                 .createBuffer(() -> "Fullscreen quad indices", indexData.remaining(), indexData);
     }
 
-    public void render(Vector3f lightScreenPos, Vector3f lightColor, float radius, float brightness, float lightType, float bloom) {
+    public void render(Vector3f lightScreenPos, Light light) {
         MinecraftClient mc = MinecraftClient.getInstance();
         var fb = mc.getFramebuffer();
         var colorView = fb.getColorAttachmentView();
         var depthView = fb.getDepthAttachmentView();
 
-        GpuBufferSlice uniformSlice = writeUniform(lightScreenPos, lightColor, radius, brightness, fb.viewportWidth, fb.viewportHeight, lightType, bloom);
+        Camera cam = mc.gameRenderer.getCamera();
+        Quaternionf camRot = cam.getRotation();
+        Vector3f lightDirCam = new Vector3f(light.direction);
+        camRot.conjugate().transform(lightDirCam);
+        lightDirCam.normalize();
+
+        GpuBufferSlice uniformSlice = writeUniform(
+                lightScreenPos,
+                light.color,
+                light.radius,
+                light.brightness,
+                fb.viewportWidth,
+                fb.viewportHeight,
+                light.type == LightType.OMNI ? 0f : 1f,
+                light.bloom ? 1f : 0f,
+                lightDirCam,
+                light.coneAngle
+        );
 
         try (RenderPass pass = RenderSystem.getDevice()
                 .createCommandEncoder()
@@ -80,8 +101,12 @@ public class LightRenderer {
         }
     }
 
-    private static GpuBufferSlice writeUniform(Vector3f screenPos, Vector3f color, float radius, float brightness, float fbWidth, float fbHeight, float lightType, float bloom) {
-        ByteBuffer buf = ByteBuffer.allocateDirect(48).order(ByteOrder.nativeOrder());
+    private static GpuBufferSlice writeUniform(Vector3f screenPos, Vector3f color, float radius, float brightness, float fbWidth, float fbHeight, float lightType, float bloom, Vector3f direction, float coneAngle) {
+        // vec4 = 16
+        // vec3 = 12
+        // vec2 = 8
+        // float = 4
+        ByteBuffer buf = ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder());
 
 // vec4 LightPosRadius
         buf.putFloat(screenPos.x);
@@ -94,6 +119,12 @@ public class LightRenderer {
         buf.putFloat(color.y);
         buf.putFloat(color.z);
         buf.putFloat(brightness);
+
+// vec4 LightDirCone
+        buf.putFloat(direction.x);
+        buf.putFloat(direction.y);
+        buf.putFloat(direction.z);
+        buf.putFloat((float)Math.cos(coneAngle/2));
 
 // vec2 ScreenSize
         buf.putFloat(fbWidth);

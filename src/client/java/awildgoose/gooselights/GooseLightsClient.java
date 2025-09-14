@@ -76,19 +76,11 @@ public class GooseLightsClient implements ClientModInitializer {
 			if (matrices != null) {
 				Vec3d screenPos = projectToScreen(light);
 
-				if (screenPos != null) {
-					float lightType = light.type == LightType.SPOT ? 1f : 0f;
-					float bloom = light.bloom ? 1f : 0f;
-
+				if (screenPos != null)
 					renderer.render(
 							new Vector3f((float)screenPos.x, (float)screenPos.y, 0),
-							light.color,
-							light.radius,
-							light.brightness,
-							lightType,
-							bloom
+							light
 					);
-				}
 			}
 
 			light.position = new Vec3d(0.5, -60, 0.5);
@@ -100,6 +92,13 @@ public class GooseLightsClient implements ClientModInitializer {
 					)
 			);
 			light.brightness = 10;
+			light.type = LightType.SPOT;
+
+			if (MinecraftClient.getInstance().player != null) {
+				light.direction = MinecraftClient.getInstance().player.getPos().toVector3f()
+						.sub(light.position.toVector3f())
+						.normalize();
+			}
 		});
 
 		LightManager.addLight(light);
