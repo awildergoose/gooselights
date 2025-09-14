@@ -1,7 +1,8 @@
 package awildgoose.gooselights;
 
+import awildgoose.gooselights.lights.Light;
 import awildgoose.gooselights.lights.LightManager;
-import awildgoose.gooselights.lights.SpotLight;
+import awildgoose.gooselights.lights.LightType;
 import awildgoose.gooselights.render.LightRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -14,58 +15,86 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.awt.*;
+
 public class GooseLightsClient implements ClientModInitializer {
-	private final SpotLight s = new SpotLight(Vec3d.ZERO, Vec3d.ZERO, (float)Math.toRadians(20), 20f, 2.0f, 0xFFFFAAFF, true);
+	private final Light s = new Light(
+			Vec3d.ZERO,
+			10,
+			20f,
+			Color.WHITE,
+			false
+	);
 	public LightRenderer renderer;
 
-	public static Vec3d projectToScreen(Vec3d worldPos) {
+	public static Vec3d projectToScreen(Light light) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		Camera cam = mc.gameRenderer.getCamera();
 		Framebuffer fb = mc.getFramebuffer();
 		int fbWidth = fb.viewportWidth;
 		int fbHeight = fb.viewportHeight;
+
 		Vec3d camPos = cam.getPos();
 		Quaternionf camRot = cam.getRotation();
 
 		Vector3f rel = new Vector3f(
-				(float)(worldPos.x - camPos.x),
-				(float)(worldPos.y - camPos.y),
-				(float)(worldPos.z - camPos.z)
+				(float)(light.position.x - camPos.x),
+				(float)(light.position.y - camPos.y),
+				(float)(light.position.z - camPos.z)
 		);
+
 		camRot.conjugate().transform(rel);
 
 		Vector3f forward = cam.getHorizontalPlane();
 		float z_cam = rel.dot(forward);
 
-		float fov = (float) Math.toRadians(mc.options.getFov().getValue());
-		float aspect = fbWidth / (float) fbHeight;
+		if (light.type == LightType.SPOT) {
+			Vector3f toCamera = new Vector3f(-rel.x, -rel.y, -rel.z).normalize();
+			float cosAngle = toCamera.dot(light.direction);
+			if (cosAngle < Math.cos(light.coneAngle)) return null;
+		}
+
+		float fov = (float)Math.toRadians(mc.options.getFov().getValue());
+		float aspect = fbWidth / (float)fbHeight;
+
 		float ndcX = rel.x / (-rel.z * (float)Math.tan(fov/2f) * aspect);
 		float ndcY = rel.y / (-rel.z * (float)Math.tan(fov/2f));
 
 		float px = (ndcX * 0.5f + 0.5f) * fbWidth;
 		float py = (ndcY * 0.5f + 0.5f) * fbHeight;
 
-		return new Vec3d(px, py, z_cam);
-	}
+		if (px < 0 || px > fbWidth || py < 0 || py > fbHeight) return null;
 
+		float screenRadius;
+		if (light.type == LightType.OMNI) {
+			screenRadius = light.radius / Math.max(z_cam, 0.1f);
+		} else {
+			float distance = rel.length();
+			screenRadius = (float)(Math.tan(light.coneAngle) * distance);
+		}
+
+		return new Vec3d(px, py, screenRadius);
+	}
 
 	@Override
 	public void onInitializeClient() {
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> renderer = new LightRenderer());
 
-		WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+		WorldRenderEvents.BEFORE_ENTITIES.register(context -> {
 			MatrixStack matrices = context.matrixStack();
 
 			if (matrices != null) {
-				Vec3d screenPos = projectToScreen(s.position);
+				Vec3d screenPos = projectToScreen(s);
 
-				renderer.render(
-						new Vector3f((float)screenPos.x, (float)screenPos.y, 0),
-						new Vector3f(1,1,1), 50, 1
-				);
+				if (screenPos != null) {
+					renderer.render(
+							new Vector3f((float) screenPos.x, (float) screenPos.y, 0),
+							s.color, s.radius, s.brightness
+					);
+				}
 			}
 
-			s.position = new Vec3d(0, -60, 0);
+			s.position = new Vec3d(0.5, -60, 0.5);
 		});
 
 		LightManager.addLight(s);

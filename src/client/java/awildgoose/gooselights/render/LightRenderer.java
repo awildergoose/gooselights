@@ -19,7 +19,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 public class LightRenderer {
-
     public static final RenderPipeline LIGHT_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder()
                     .withLocation("pipeline/light")
