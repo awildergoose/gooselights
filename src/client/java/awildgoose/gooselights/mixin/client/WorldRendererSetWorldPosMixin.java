@@ -47,7 +47,6 @@ public class WorldRendererSetWorldPosMixin {
         }
 
         List<DynamicUniforms.UniformValue> list = new ArrayList<>();
-        Vector4f vector4f = new Vector4f(1.0F, 1.0F, 1.0F, 1.0F);
         Matrix4f matrix4f = new Matrix4f();
 
         while (objectListIterator.hasNext()) {

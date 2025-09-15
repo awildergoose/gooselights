@@ -19,7 +19,7 @@ public class GPULight {
     public Vector3f forward = new Vector3f(0, -1, 0);
     public float innerCutoff = (float)Math.cos(Math.toRadians(12.5));
     public float outerCutoff = (float)Math.cos(Math.toRadians(17.5));
-    public int type = TYPE_OMNI;
+    public int type;
 
     public GPULight(Vector3f position, Color color, float radius, float intensity) {
         this.position = position;
