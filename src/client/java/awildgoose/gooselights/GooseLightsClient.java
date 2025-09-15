@@ -6,6 +6,7 @@ import awildgoose.gooselights.lights.SpotLight;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -18,6 +19,8 @@ import org.slf4j.LoggerFactory;
 public class GooseLightsClient implements ClientModInitializer {
 	OmniLight omni;
 	SpotLight spot;
+
+	public static BlockPos lastChunkOrigin = BlockPos.ORIGIN;
 
 	public static String MOD_ID = "gooselights";
 	public static Logger GooseLogger = LoggerFactory.getLogger(MOD_ID);

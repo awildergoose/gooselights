@@ -1,5 +1,6 @@
 package awildgoose.gooselights.mixin.client;
 
+import awildgoose.gooselights.GooseLightsClient;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
@@ -12,6 +13,7 @@ import net.minecraft.client.gl.MappableRingBuffer;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BlockRenderLayerGroup;
 import net.minecraft.client.render.SectionRenderState;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -80,6 +82,7 @@ public class SectionRenderStateMixin {
         int arraySize = 256;
         int stride = 16;
         ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
+        BlockPos currentChunk = GooseLightsClient.lastChunkOrigin;
 
         for (int z = 0; z < 16; z++) {
             for (int x = 0; x < 16; x++) {
@@ -87,6 +90,12 @@ public class SectionRenderStateMixin {
                 float g = (float)Math.random();
                 float b = (float)Math.random();
                 float a = 1f;
+
+                if (currentChunk.getX() == 0 && currentChunk.getZ() == 0) {
+                    r = 1f;
+                    g = 0f;
+                    b = 0f;
+                }
 
                 buf.putFloat(r);
                 buf.putFloat(g);

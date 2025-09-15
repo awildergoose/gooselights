@@ -36,7 +36,10 @@ void main() {
     vec4 vanillaLight = minecraft_sample_lightmap(Sampler2, UV2);
 
     // Position is the block pos of this chunk
-    vec4 myLight = lights[int(Position.z * 15 + Position.x)];
+    vec4 worldPos = ColorModulator;
+    vec4 myLight = vec4(1, 1, 1, 1);//lights[int(Position.z * 15 + Position.x)];
+    if (worldPos.x == 0 && worldPos.z == 0)
+        myLight = vec4(1f, 0f, 0f, 1f);
     vertexColor = Color * mix(vanillaLight, myLight, 0.5);
 
     texCoord0 = UV0;
