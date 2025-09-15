@@ -1,15 +1,8 @@
 package awildgoose.gooselights;
 
 import awildgoose.gooselights.gpu.GPULight;
-import awildgoose.gooselights.lights.LightManager;
-import awildgoose.gooselights.lights.OmniLight;
-import awildgoose.gooselights.lights.SpotLight;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

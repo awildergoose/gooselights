@@ -1,20 +1,16 @@
 package awildgoose.gooselights.mixin.client;
 
 import awildgoose.gooselights.GooseLightsClient;
-import awildgoose.gooselights.gpu.GPULight;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.MappableRingBuffer;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BlockRenderLayerGroup;
 import net.minecraft.client.render.SectionRenderState;
-import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static awildgoose.gooselights.GooseLightsClient.GooseLogger;
 import static awildgoose.gooselights.GooseLightsClient.MAX_LIGHTS;
 
 @Mixin(SectionRenderState.class)
@@ -50,7 +45,7 @@ public class SectionRenderStateMixin {
                                             Framebuffer framebuffer,
                                             RenderPass renderPass
     ) {
-        if (colormap == null || tickCounter % 60 == 0)
+        if (colormap == null || tickCounter % 2 == 0)
             updateColormap();
 
         renderPass.setUniform("GooseLights", colormap);
@@ -62,7 +57,7 @@ public class SectionRenderStateMixin {
 
     @Unique
     private static void updateColormap() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(MAX_LIGHTS * 32).order(ByteOrder.nativeOrder());
+        ByteBuffer buf = ByteBuffer.allocateDirect(4 + 12 + MAX_LIGHTS * 32).order(ByteOrder.nativeOrder());
 
         buf.putInt(GooseLightsClient.lights.size());
         buf.putInt(0).putInt(0).putInt(0); // padding
@@ -79,7 +74,5 @@ public class SectionRenderStateMixin {
         buf.flip();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
         colormap = buffer.slice();
-
-        GooseLogger.info("Colormap updated!");
     }
 }
