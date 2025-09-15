@@ -12,6 +12,10 @@ in vec3 Normal;
 
 uniform sampler2D Sampler2;
 
+layout(std140) uniform GooseLights {
+    vec4 lights[256];
+};
+
 out float sphericalVertexDistance;
 out float cylindricalVertexDistance;
 out vec4 vertexColor;
@@ -27,6 +31,13 @@ void main() {
 
     sphericalVertexDistance = fog_spherical_distance(pos);
     cylindricalVertexDistance = fog_cylindrical_distance(pos);
-    vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
+
+    // vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
+    vec4 vanillaLight = minecraft_sample_lightmap(Sampler2, UV2);
+
+    // Position is the block pos of this chunk
+    vec4 myLight = lights[int((Position.z+1) * 16 + (Position.x+1))];
+    vertexColor = Color * mix(vanillaLight, myLight, 0.5);
+
     texCoord0 = UV0;
 }

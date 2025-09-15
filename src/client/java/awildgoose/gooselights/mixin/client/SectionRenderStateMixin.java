@@ -47,7 +47,7 @@ public class SectionRenderStateMixin {
                                             RenderPass renderPass
     ) {
         if (colormap == null) initColormap();
-        if (tickCounter % 300 == 0)
+        if (tickCounter % 60 == 0)
             updateColormap();
 
         renderPass.setUniform("GooseLights", colormap);
@@ -67,7 +67,7 @@ public class SectionRenderStateMixin {
             buf.putFloat(1f);
             buf.putFloat(1f);
             buf.putFloat(1f);
-            buf.putFloat(0f);
+            buf.putFloat(1f);
         }
 
         buf.flip();
@@ -81,17 +81,24 @@ public class SectionRenderStateMixin {
         int stride = 16;
         ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
 
-        for (int i = 0; i < arraySize; i++) {
-            buf.putFloat((float) Math.random());
-            buf.putFloat((float) Math.random());
-            buf.putFloat((float) Math.random());
-            buf.putFloat(0f);
+        for (int z = 0; z < 16; z++) {
+            for (int x = 0; x < 16; x++) {
+                float r = (float)Math.random();
+                float g = (float)Math.random();
+                float b = (float)Math.random();
+                float a = 1f;
+
+                buf.putFloat(r);
+                buf.putFloat(g);
+                buf.putFloat(b);
+                buf.putFloat(a);
+            }
         }
 
         buf.flip();
         GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
         colormap = buffer.slice();
 
-        GooseLogger.debug("Colormap updated!");
+        GooseLogger.info("Colormap updated!");
     }
 }
