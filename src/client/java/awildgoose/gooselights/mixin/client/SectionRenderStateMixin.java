@@ -2,11 +2,13 @@ package awildgoose.gooselights.mixin.client;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.MappableRingBuffer;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BlockRenderLayerGroup;
 import net.minecraft.client.render.SectionRenderState;
@@ -19,7 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Random;
+
+import static awildgoose.gooselights.GooseLightsClient.GooseLogger;
 
 @Mixin(SectionRenderState.class)
 public class SectionRenderStateMixin {
@@ -41,16 +44,54 @@ public class SectionRenderStateMixin {
                                             MinecraftClient minecraftClient,
                                             boolean bl,
                                             Framebuffer framebuffer,
-                                            RenderPass renderPass) {
-        renderPass.setUniform("GooseLights", writeUniform());
+                                            RenderPass renderPass
+    ) {
+        if (colormap == null) initColormap();
+        if (tickCounter % 300 == 0)
+            updateColormap();
+
+        renderPass.setUniform("GooseLights", colormap);
+        tickCounter++;
+    }
+
+    @Unique private static int tickCounter = 0;
+    @Unique private static GpuBufferSlice colormap;
+
+    @Unique
+    private static void initColormap() {
+        int arraySize = 256;
+        int stride = 16;
+        ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
+
+        for (int i = 0; i < arraySize; i++) {
+            buf.putFloat(1f);
+            buf.putFloat(1f);
+            buf.putFloat(1f);
+            buf.putFloat(0f);
+        }
+
+        buf.flip();
+        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
+        colormap = buffer.slice();
     }
 
     @Unique
-    private static GpuBufferSlice writeUniform() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(48).order(ByteOrder.nativeOrder());
-        buf.putFloat(new Random().nextFloat());
+    private static void updateColormap() {
+        int arraySize = 256;
+        int stride = 16;
+        ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
+
+        for (int i = 0; i < arraySize; i++) {
+            buf.putFloat((float) Math.random());
+            buf.putFloat((float) Math.random());
+            buf.putFloat((float) Math.random());
+            buf.putFloat(0f);
+        }
+
         buf.flip();
-        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Colored light UBO", buf.remaining(), buf);
-        return buffer.slice();
+        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
+        colormap = buffer.slice();
+
+        GooseLogger.debug("Colormap updated!");
     }
 }

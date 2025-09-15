@@ -6,7 +6,7 @@
 uniform sampler2D Sampler0;
 
 layout(std140) uniform GooseLights {
-    float someNumber;
+    vec4 lights[256];
 };
 
 in float sphericalVertexDistance;
@@ -24,6 +24,6 @@ void main() {
     }
 #endif
     // multiply color HERE!
-    color *= someNumber;
+    color *= lights[0];
     fragColor = apply_fog(color, sphericalVertexDistance, cylindricalVertexDistance, FogEnvironmentalStart, FogEnvironmentalEnd, FogRenderDistanceStart, FogRenderDistanceEnd, FogColor);
 }
