@@ -20,6 +20,11 @@ struct GPULight {
     float radius;
     vec3 color;
     float intensity;
+    // spotlight
+    vec3 forward;
+    float innerCutoff;
+    float outerCutoff;
+    int type; // 0 = omni, 1 = spot
 };
 
 layout(std140) uniform GooseLights {
@@ -51,12 +56,21 @@ void main() {
     vec4 accumulatedLight = minecraft_sample_lightmap(Sampler2, UV2);
 
     for (int i = 0; i < lightCount; i++) {
-        GPULight l = lights[i];
-        float dist = length(worldPos - l.position);
-        if (dist < l.radius) {
-            float intensity = (1.0 - dist / l.radius) * l.intensity;
-            accumulatedLight += vec4(l.color, 1.0) * intensity;
+        GPULight light = lights[i];
+        vec3 lightDir = normalize(worldPos - light.position);
+        float distance = length(worldPos - light.position);
+
+        float attenuation = 0.0;
+        if (light.type == 0) { // omni
+            attenuation = 1.0 - distance / light.radius;
+        } else { // spot
+            float theta = dot(lightDir, normalize(light.forward));
+            float epsilon = light.innerCutoff - light.outerCutoff;
+            float intensityFactor = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+            attenuation = (1.0 - distance / light.radius) * intensityFactor;
         }
+
+        accumulatedLight += vec4(light.color * light.intensity * attenuation, 1.0);
     }
 
     accumulatedLight = clamp(accumulatedLight, 0.0, 1.0);

@@ -57,17 +57,18 @@ public class SectionRenderStateMixin {
 
     @Unique
     private static void updateColormap() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(4 + 12 + MAX_LIGHTS * 32).order(ByteOrder.nativeOrder());
+        int stride = 64;
+        ByteBuffer buf = ByteBuffer.allocateDirect(4 + 12 + MAX_LIGHTS * stride)
+                .order(ByteOrder.nativeOrder());
 
         buf.putInt(GooseLightsClient.lights.size());
         buf.putInt(0).putInt(0).putInt(0); // padding
 
         for (int i = 0; i < MAX_LIGHTS; i++) {
-            if (i < GooseLightsClient.lights.size()) {
+            if (i < GooseLightsClient.lights.size() && GooseLightsClient.lights.get(i).enabled) {
                 GooseLightsClient.lights.get(i).upload(buf);
             } else {
-                // empty light
-                for (int j = 0; j < 8; j++) buf.putFloat(0f);
+                for (int j = 0; j < stride / 4; j++) buf.putFloat(0f);
             }
         }
 
