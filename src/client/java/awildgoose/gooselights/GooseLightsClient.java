@@ -41,7 +41,7 @@ public class GooseLightsClient implements ClientModInitializer {
 			Vector3f forward = new Vector3f(0, 0, -1).rotate(camRot);
 
 			if (MinecraftClient.getInstance().player != null) {
-				spot.setPos(MinecraftClient.getInstance().player.getPos());
+				spot.setPos(MinecraftClient.getInstance().player.getEyePos());
 			}
 
 			// Freeze vertical rotation because why not
