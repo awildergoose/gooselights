@@ -15,8 +15,17 @@ uniform sampler2D Sampler2;
 
 #define MAX_LIGHTS 256
 
+struct GPULight {
+    vec3 position;
+    float radius;
+    vec3 color;
+    float intensity;
+};
+
 layout(std140) uniform GooseLights {
-    vec4 lights[MAX_LIGHTS];
+    int lightCount;
+    int pad0; int pad1; int pad2; // 16 bytes
+    GPULight lights[MAX_LIGHTS];
 };
 
 out float sphericalVertexDistance;
@@ -41,21 +50,13 @@ void main() {
 
     vec4 accumulatedLight = minecraft_sample_lightmap(Sampler2, UV2);
 
-    vec3 lightPos = vec3(4.0, -62.0, 2.0);
-    float radius = 10.0f;
-    float t = (worldPos.x + worldPos.y + worldPos.z) * 0.1 + (GameTime * 6000.0);
-    vec4 lightColor = vec4(
-        0.5 + 0.5 * sin(t + 0.0),
-        0.5 + 0.5 * sin(t + 2.0),
-        0.5 + 0.5 * sin(t + 4.0),
-        1.0
-    );
-
-    float dist = length(worldPos - lightPos);
-    if (dist < radius) {
-        // linear fall-off
-        float intensity = 1.0 - dist / radius;
-        accumulatedLight += lightColor * intensity;
+    for (int i = 0; i < lightCount; i++) {
+        GPULight l = lights[i];
+        float dist = length(worldPos - l.position);
+        if (dist < l.radius) {
+            float intensity = (1.0 - dist / l.radius) * l.intensity;
+            accumulatedLight += vec4(l.color, 1.0) * intensity;
+        }
     }
 
     accumulatedLight = clamp(accumulatedLight, 0.0, 1.0);

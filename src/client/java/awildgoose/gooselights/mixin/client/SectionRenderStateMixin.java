@@ -1,6 +1,7 @@
 package awildgoose.gooselights.mixin.client;
 
 import awildgoose.gooselights.GooseLightsClient;
+import awildgoose.gooselights.gpu.GPULight;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
@@ -25,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import static awildgoose.gooselights.GooseLightsClient.GooseLogger;
+import static awildgoose.gooselights.GooseLightsClient.MAX_LIGHTS;
 
 @Mixin(SectionRenderState.class)
 public class SectionRenderStateMixin {
@@ -48,8 +50,7 @@ public class SectionRenderStateMixin {
                                             Framebuffer framebuffer,
                                             RenderPass renderPass
     ) {
-        if (colormap == null) initColormap();
-        if (tickCounter % 60 == 0)
+        if (colormap == null || tickCounter % 60 == 0)
             updateColormap();
 
         renderPass.setUniform("GooseLights", colormap);
@@ -60,47 +61,18 @@ public class SectionRenderStateMixin {
     @Unique private static GpuBufferSlice colormap;
 
     @Unique
-    private static void initColormap() {
-        int arraySize = 256;
-        int stride = 16;
-        ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
-
-        for (int i = 0; i < arraySize; i++) {
-            buf.putFloat(1f);
-            buf.putFloat(1f);
-            buf.putFloat(1f);
-            buf.putFloat(1f);
-        }
-
-        buf.flip();
-        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
-        colormap = buffer.slice();
-    }
-
-    @Unique
     private static void updateColormap() {
-        int arraySize = 256;
-        int stride = 16;
-        ByteBuffer buf = ByteBuffer.allocateDirect(arraySize * stride).order(ByteOrder.nativeOrder());
-        BlockPos currentChunk = GooseLightsClient.lastChunkOrigin;
+        ByteBuffer buf = ByteBuffer.allocateDirect(MAX_LIGHTS * 32).order(ByteOrder.nativeOrder());
 
-        for (int z = 0; z < 16; z++) {
-            for (int x = 0; x < 16; x++) {
-                float r = (float)Math.random();
-                float g = (float)Math.random();
-                float b = (float)Math.random();
-                float a = 1f;
+        buf.putInt(GooseLightsClient.lights.size());
+        buf.putInt(0).putInt(0).putInt(0); // padding
 
-                if (currentChunk.getX() == 0 && currentChunk.getZ() == 0) {
-                    r = 1f;
-                    g = 0f;
-                    b = 0f;
-                }
-
-                buf.putFloat(r);
-                buf.putFloat(g);
-                buf.putFloat(b);
-                buf.putFloat(a);
+        for (int i = 0; i < MAX_LIGHTS; i++) {
+            if (i < GooseLightsClient.lights.size()) {
+                GooseLightsClient.lights.get(i).upload(buf);
+            } else {
+                // empty light
+                for (int j = 0; j < 8; j++) buf.putFloat(0f);
             }
         }
 

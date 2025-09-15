@@ -1,5 +1,6 @@
 package awildgoose.gooselights;
 
+import awildgoose.gooselights.gpu.GPULight;
 import awildgoose.gooselights.lights.LightManager;
 import awildgoose.gooselights.lights.OmniLight;
 import awildgoose.gooselights.lights.SpotLight;
@@ -13,14 +14,16 @@ import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Client initializer
  */
 public class GooseLightsClient implements ClientModInitializer {
-	OmniLight omni;
-	SpotLight spot;
-
-	public static BlockPos lastChunkOrigin = BlockPos.ORIGIN;
+	public static final int MAX_LIGHTS = 256;
+	public static List<GPULight> lights = new ArrayList<>();
 
 	public static String MOD_ID = "gooselights";
 	public static Logger GooseLogger = LoggerFactory.getLogger(MOD_ID);
@@ -32,31 +35,18 @@ public class GooseLightsClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		GPULight light = new GPULight(
+				new Vector3f(4.0f, -62.0f, 2.0f),
+				Color.RED,
+				10,
+				1
+		);
+
+		lights.add(light);
+
 		WorldRenderEvents.END.register(ctx -> {
-			if (omni == null || spot == null) {
-				omni = new OmniLight(new Vec3d(7, -63, 10), 15, 12);
-				LightManager.addLight(omni);
-
-				spot = new SpotLight(new Vec3d(20, -63, 20),
-						new Vec3d(0, -1, 0),
-						Math.toRadians(25),
-						15,
-						20);
-				LightManager.addLight(spot);
-			}
-
-			Quaternionf camRot = ctx.camera().getRotation();
-			Vector3f forward = new Vector3f(0, 0, -1).rotate(camRot);
-
-			if (MinecraftClient.getInstance().player != null) {
-				spot.setPos(MinecraftClient.getInstance().player.getEyePos());
-			}
-
-			// Freeze vertical rotation because why not
-			spot.setDirection(new Vec3d(forward.x, 0, forward.z));
-			spot.setLuminance(30);
-			spot.setConeAngleRadians(Math.toRadians(45));
-			spot.setRadius(20);
+			light.position = ctx.camera().getCameraPos().toVector3f();
+			light.radius = 10;
 		});
 	}
 }
