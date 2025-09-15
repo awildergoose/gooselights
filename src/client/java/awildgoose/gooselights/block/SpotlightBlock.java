@@ -80,7 +80,7 @@ public class SpotlightBlock extends BlockWithEntity {
 
         if (stack.getItem() instanceof DyeItem dye) {
             DyeColor dyeColor = dye.getColor();
-            int rgbInt = dyeColor.getFireworkColor();
+            int rgbInt = dyeColor.getEntityColor();
 
             float r = ((rgbInt >> 16) & 0xFF) / 255f;
             float g = ((rgbInt >> 8) & 0xFF) / 255f;
@@ -102,7 +102,7 @@ public class SpotlightBlock extends BlockWithEntity {
     }
 
     public static int getLuminance(BlockState currentBlockState) {
-        return currentBlockState.get(SpotlightBlock.LIT) ? 15 : 0;
+        return 0;//currentBlockState.get(SpotlightBlock.LIT) ? 15 : 0;
     }
 
     @Nullable

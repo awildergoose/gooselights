@@ -57,11 +57,11 @@ public class SpotlightBlockEntity extends BlockEntity {
         lampLight = new GPULight(
                 lightPos,
                 lightColor,
-                25f,
-                3f,
-                calculateForward(),
+                15f,
                 10f,
-                25f
+                calculateForward(),
+                90f,
+                90f
         );
         lampLight.type = GPULight.TYPE_SPOT;
         GooseLightsClient.lights.add(lampLight);
