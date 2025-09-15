@@ -3,7 +3,8 @@
 	"package": "awildgoose.gooselights.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-
+		"TerrainPipelineMixin",
+		"SectionRenderStateMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
