@@ -25,7 +25,7 @@ public class SpotLight implements DynamicLightBehavior {
      * @param direction Direction of light
      * @param coneAngleRadians Angle of spotlight in radians
      * @param luminance Luminance of light (how bright it is)
-     * @param radius Range of light (how big it is)
+     * @param radius Radius of light (how big it is)
      */
     public SpotLight(Vec3d pos, Vec3d direction, double coneAngleRadians, int luminance, double radius) {
         this.pos = pos;
@@ -118,8 +118,8 @@ public class SpotLight implements DynamicLightBehavior {
     }
 
     /**
-     * Set range of light
-     * @param radius New range (size)
+     * Set radius of light
+     * @param radius New radius (size)
      */
     public void setRadius(double radius) {
         this.radius = radius;
