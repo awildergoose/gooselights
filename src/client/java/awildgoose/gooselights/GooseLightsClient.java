@@ -10,6 +10,9 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/**
+ * Client initializer
+ */
 public class GooseLightsClient implements ClientModInitializer {
 	OmniLight omni;
 	SpotLight spot;
@@ -40,7 +43,7 @@ public class GooseLightsClient implements ClientModInitializer {
 			spot.setDirection(new Vec3d(forward.x, 0, forward.z));
 			spot.setLuminance(30);
 			spot.setConeAngleRadians(Math.toRadians(45));
-			spot.setRange(20);
+			spot.setRadius(20);
 		});
 	}
 }

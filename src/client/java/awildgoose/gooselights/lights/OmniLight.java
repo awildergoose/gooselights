@@ -5,6 +5,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Omnidirectional light for things like torches, lanterns, glow-lichen, etc
+ */
 @SuppressWarnings("unused")
 public class OmniLight implements DynamicLightBehavior {
     private Vec3d pos;
@@ -14,6 +17,12 @@ public class OmniLight implements DynamicLightBehavior {
     private BoundingBox box;
     private boolean dirty = true;
 
+    /**
+     * Creates a new omni-directional light
+     * @param pos Position of light
+     * @param luminance Luminance of light (how bright it is)
+     * @param radius Radius of light (how big it is)
+     */
     public OmniLight(Vec3d pos, int luminance, double radius) {
         this.pos = pos;
         this.luminance = luminance;
@@ -52,16 +61,28 @@ public class OmniLight implements DynamicLightBehavior {
         return false;
     }
 
+    /**
+     * Set position of light
+     * @param pos New position
+     */
     public void setPos(Vec3d pos) {
         this.pos = pos;
         recalcBox();
     }
 
+    /**
+     * Set radius of light
+     * @param radius New radius (size)
+     */
     public void setRadius(double radius) {
         this.radius = radius;
         recalcBox();
     }
 
+    /**
+     * Set luminance of light
+     * @param luminance New luminance (brightness)
+     */
     public void setLuminance(int luminance) {
         this.luminance = luminance;
         this.dirty = true;

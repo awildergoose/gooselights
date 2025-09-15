@@ -5,30 +5,41 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Spotlight for things like flashlights, headlights, searchlights, etc
+ */
 @SuppressWarnings("unused")
 public class SpotLight implements DynamicLightBehavior {
     private Vec3d pos;
     private Vec3d direction;
     private double coneAngleRadians;
     private int luminance;
-    private double range;
+    private double radius;
 
     private BoundingBox box;
     private boolean dirty = true;
 
-    public SpotLight(Vec3d pos, Vec3d direction, double coneAngleRadians, int luminance, double range) {
+    /**
+     * Creates a new spotlight
+     * @param pos Position of light
+     * @param direction Direction of light
+     * @param coneAngleRadians Angle of spotlight in radians
+     * @param luminance Luminance of light (how bright it is)
+     * @param radius Range of light (how big it is)
+     */
+    public SpotLight(Vec3d pos, Vec3d direction, double coneAngleRadians, int luminance, double radius) {
         this.pos = pos;
         this.direction = direction.normalize();
         this.coneAngleRadians = coneAngleRadians;
         this.luminance = luminance;
-        this.range = range;
+        this.radius = radius;
         recalcBox();
     }
 
     private void recalcBox() {
         this.box = new BoundingBox(
-                (int) (pos.x - range), (int) (pos.y - range), (int) (pos.z - range),
-                (int) (pos.x + range), (int) (pos.y + range), (int) (pos.z + range)
+                (int) (pos.x - radius), (int) (pos.y - radius), (int) (pos.z - radius),
+                (int) (pos.x + radius), (int) (pos.y + radius), (int) (pos.z + radius)
         );
         this.dirty = true;
     }
@@ -42,7 +53,7 @@ public class SpotLight implements DynamicLightBehavior {
         );
 
         double dist = toTarget.length();
-        if (dist > range) return 0;
+        if (dist > radius) return 0;
 
         Vec3d norm = toTarget.normalize();
         double dot = direction.dotProduct(norm);
@@ -70,28 +81,48 @@ public class SpotLight implements DynamicLightBehavior {
         return false;
     }
 
+    /**
+     * Set position of light
+     * @param pos New position
+     */
     public void setPos(Vec3d pos) {
         this.pos = pos;
         recalcBox();
     }
 
+    /**
+     * Set direction of light
+     * @param dir New direction (automatically gets normalized)
+     */
     public void setDirection(Vec3d dir) {
         this.direction = dir.normalize();
         this.dirty = true;
     }
 
+    /**
+     * Set cone angle of light
+     * @param radians New cone angle (in radians)
+     */
     public void setConeAngleRadians(double radians) {
         this.coneAngleRadians = radians;
         this.dirty = true;
     }
 
+    /**
+     * Set luminance of light
+     * @param luminance New luminance (brightness)
+     */
     public void setLuminance(int luminance) {
         this.luminance = luminance;
         this.dirty = true;
     }
 
-    public void setRange(double range) {
-        this.range = range;
+    /**
+     * Set range of light
+     * @param radius New range (size)
+     */
+    public void setRadius(double radius) {
+        this.radius = radius;
         recalcBox();
     }
 }
