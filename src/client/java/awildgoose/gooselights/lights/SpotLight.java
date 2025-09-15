@@ -38,8 +38,12 @@ public class SpotLight implements DynamicLightBehavior {
 
     private void recalcBox() {
         this.box = new BoundingBox(
-                (int) (pos.x - radius), (int) (pos.y - radius), (int) (pos.z - radius),
-                (int) (pos.x + radius), (int) (pos.y + radius), (int) (pos.z + radius)
+                (int) Math.floor(pos.x - radius),
+                (int) Math.floor(pos.y - radius),
+                (int) Math.floor(pos.z - radius),
+                (int) Math.ceil(pos.x + radius),
+                (int) Math.ceil(pos.y + radius),
+                (int) Math.ceil(pos.z + radius)
         );
         this.dirty = true;
     }
