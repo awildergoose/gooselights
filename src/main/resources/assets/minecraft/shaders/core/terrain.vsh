@@ -3,6 +3,7 @@
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
 #moj_import <minecraft:projection.glsl>
+#moj_import <minecraft:globals.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -12,8 +13,10 @@ in vec3 Normal;
 
 uniform sampler2D Sampler2;
 
+#define MAX_LIGHTS 256
+
 layout(std140) uniform GooseLights {
-    vec4 lights[256];
+    vec4 lights[MAX_LIGHTS];
 };
 
 out float sphericalVertexDistance;
@@ -32,16 +35,31 @@ void main() {
     sphericalVertexDistance = fog_spherical_distance(pos);
     cylindricalVertexDistance = fog_cylindrical_distance(pos);
 
-    // vertexColor = Color * minecraft_sample_lightmap(Sampler2, UV2);
-    vec4 vanillaLight = minecraft_sample_lightmap(Sampler2, UV2);
-
     // Position is the block pos of this chunk
     // ColorModulator.xyz is the world pos of this chunk
     vec3 worldPos = Position + ColorModulator.xyz;
-    vec4 myLight = vec4(1, 1, 1, 1);
-    if (worldPos.x == 1f && worldPos.z == 1f)
-        myLight = vec4(1f, 0f, 0f, 1f);
-    vertexColor = Color * mix(vanillaLight, myLight, 0.5);
+
+    vec4 accumulatedLight = minecraft_sample_lightmap(Sampler2, UV2);
+
+    vec3 lightPos = vec3(4.0, -62.0, 2.0);
+    float radius = 10.0f;
+    float t = (worldPos.x + worldPos.y + worldPos.z) * 0.1 + (GameTime * 6000.0);
+    vec4 lightColor = vec4(
+        0.5 + 0.5 * sin(t + 0.0),
+        0.5 + 0.5 * sin(t + 2.0),
+        0.5 + 0.5 * sin(t + 4.0),
+        1.0
+    );
+
+    float dist = length(worldPos - lightPos);
+    if (dist < radius) {
+        // linear fall-off
+        float intensity = 1.0 - dist / radius;
+        accumulatedLight += lightColor * intensity;
+    }
+
+    accumulatedLight = clamp(accumulatedLight, 0.0, 1.0);
+    vertexColor = Color * accumulatedLight;
 
     texCoord0 = UV0;
 }
