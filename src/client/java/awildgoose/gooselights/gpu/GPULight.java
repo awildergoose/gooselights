@@ -1,10 +1,13 @@
 package awildgoose.gooselights.gpu;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import org.joml.Vector3f;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
 
+@Environment(EnvType.CLIENT)
 public class GPULight {
     public static final int TYPE_OMNI = 0;
     public static final int TYPE_SPOT = 1;
