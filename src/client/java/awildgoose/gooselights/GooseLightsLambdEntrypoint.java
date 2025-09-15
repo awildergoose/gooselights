@@ -9,6 +9,11 @@ import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
  */
 @SuppressWarnings("unused")
 public class GooseLightsLambdEntrypoint implements DynamicLightsInitializer {
+    /**
+     * Called by LambDynamicLights to initialize the dynamic lights manager
+     */
+    public GooseLightsLambdEntrypoint() {}
+
     @Override
     public void onInitializeDynamicLights(DynamicLightsContext context) {
         LightManager.setDlManager(context.dynamicLightBehaviorManager());

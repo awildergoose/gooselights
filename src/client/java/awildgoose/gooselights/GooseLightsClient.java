@@ -17,6 +17,11 @@ public class GooseLightsClient implements ClientModInitializer {
 	OmniLight omni;
 	SpotLight spot;
 
+	/**
+	 * Called by fabric to initialize the mod
+	 */
+	public GooseLightsClient() {}
+
 	@Override
 	public void onInitializeClient() {
 		WorldRenderEvents.END.register(ctx -> {

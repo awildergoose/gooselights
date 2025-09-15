@@ -18,6 +18,11 @@ public class LightManager {
             Collections.synchronizedList(new ArrayList<>());
 
     /**
+     * why are you reading this
+     */
+    private LightManager() {}
+
+    /**
      * Internal function to set the DynamicLightBehaviorManager
      * @param dl DL Manager
      */
