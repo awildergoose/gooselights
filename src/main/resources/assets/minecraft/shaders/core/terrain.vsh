@@ -13,8 +13,6 @@ in vec3 Normal;
 
 uniform sampler2D Sampler2;
 
-#define MAX_LIGHTS 256
-
 struct GPULight {
     vec3 position;
     float radius;

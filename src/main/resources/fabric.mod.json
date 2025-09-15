@@ -3,7 +3,7 @@
 	"id": "gooselights",
 	"version": "${version}",
 	"name": "Gooselights",
-	"description": "LambDynamicLights unofficial helper",
+	"description": "Support for colored lights and spotlights",
 	"authors": [
 		"awildergoose"
 	],
@@ -17,13 +17,9 @@
 	"entrypoints": {
 		"client": [
 			"awildgoose.gooselights.GooseLightsClient"
-		],
-		"lambdynlights:initializer": [
-			"awildgoose.gooselights.GooseLightsLambdEntrypoint"
 		]
 	},
 	"mixins": [
-		"gooselights.mixins.json",
 		{
 			"config": "gooselights.client.mixins.json",
 			"environment": "client"

@@ -28,12 +28,13 @@ import java.util.EnumMap;
 import java.util.List;
 
 @Mixin(WorldRenderer.class)
-public class BuiltChunkGetOriginMixin {
+public class WorldRendererSetWorldPosMixin {
     @Shadow private ObjectArrayList<ChunkBuilder.BuiltChunk> builtChunks;
 
     /**
+     * TODO implement this in a better way
      * @author awildergoose
-     * @reason Replace uniform values to add instead of subtract
+     * @reason Replace uniform values to provide world position
      */
     @Overwrite
     private SectionRenderState renderBlockLayers(Matrix4fc matrix4fc, double d, double e, double f) {
@@ -75,10 +76,10 @@ public class BuiltChunkGetOriginMixin {
                     list.add(
                             new DynamicUniforms.UniformValue(
                                     matrix4fc, new Vector4f(
-                                    blockPos.getX(),
-                                    blockPos.getY(),
-                                    blockPos.getZ(),
-0
+                                        blockPos.getX(),
+                                        blockPos.getY(),
+                                        blockPos.getZ(),
+                                        0
                                     ), new Vector3f(
                                             (float)(blockPos.getX() - d),
                                             (float)(blockPos.getY() - e),

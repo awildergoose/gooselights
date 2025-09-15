@@ -34,16 +34,17 @@ public class SectionRenderStateMixin {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void gooseLights$injectUniforms(BlockRenderLayerGroup group,
-                                            CallbackInfo ci,
-                                            RenderSystem.ShapeIndexBuffer shapeIndexBuffer,
-                                            GpuBuffer gpuBuffer,
-                                            VertexFormat.IndexType indexType,
-                                            BlockRenderLayer[] blockRenderLayers,
-                                            MinecraftClient minecraftClient,
-                                            boolean bl,
-                                            Framebuffer framebuffer,
-                                            RenderPass renderPass
+    private void gooseLights$injectUniforms(
+            BlockRenderLayerGroup group,
+            CallbackInfo ci,
+            RenderSystem.ShapeIndexBuffer shapeIndexBuffer,
+            GpuBuffer gpuBuffer,
+            VertexFormat.IndexType indexType,
+            BlockRenderLayer[] blockRenderLayers,
+            MinecraftClient minecraftClient,
+            boolean bl,
+            Framebuffer framebuffer,
+            RenderPass renderPass
     ) {
         if (colormap == null || tickCounter % 2 == 0)
             updateColormap();

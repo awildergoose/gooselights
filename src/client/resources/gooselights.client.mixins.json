@@ -5,7 +5,7 @@
 	"client": [
 		"TerrainPipelineMixin",
 		"SectionRenderStateMixin",
-		"BuiltChunkGetOriginMixin"
+		"WorldRendererSetWorldPosMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
