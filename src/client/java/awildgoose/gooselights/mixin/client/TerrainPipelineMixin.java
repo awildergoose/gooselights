@@ -15,7 +15,7 @@ import static awildgoose.gooselights.GooseLightsClient.MAX_LIGHTS;
 public class TerrainPipelineMixin {
     @Inject(at = @At("RETURN"), method = "withFragmentShader", cancellable = true)
     public void withFragmentShader(String fragmentShader, CallbackInfoReturnable<RenderPipeline.Builder> cib) {
-        if (Objects.equals(fragmentShader, "core/terrain")) {
+        if (Objects.equals(fragmentShader, "core/terrain") || fragmentShader.startsWith("core/entity")) {
             var builder = cib.getReturnValue();
             cib.setReturnValue(builder
                     .withShaderDefine("MAX_LIGHTS", MAX_LIGHTS)

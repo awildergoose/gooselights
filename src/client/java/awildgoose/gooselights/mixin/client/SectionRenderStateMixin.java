@@ -1,8 +1,7 @@
 package awildgoose.gooselights.mixin.client;
 
-import awildgoose.gooselights.GooseLightsClient;
+import awildgoose.gooselights.gpu.Colormap;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -12,16 +11,10 @@ import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.client.render.BlockRenderLayerGroup;
 import net.minecraft.client.render.SectionRenderState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-import static awildgoose.gooselights.GooseLightsClient.MAX_LIGHTS;
 
 @Mixin(SectionRenderState.class)
 public class SectionRenderStateMixin {
@@ -46,35 +39,6 @@ public class SectionRenderStateMixin {
             Framebuffer framebuffer,
             RenderPass renderPass
     ) {
-        if (colormap == null || tickCounter % 2 == 0)
-            updateColormap();
-
-        renderPass.setUniform("GooseLights", colormap);
-        tickCounter++;
-    }
-
-    @Unique private static int tickCounter = 0;
-    @Unique private static GpuBufferSlice colormap;
-
-    @Unique
-    private static void updateColormap() {
-        int stride = 64;
-        ByteBuffer buf = ByteBuffer.allocateDirect(4 + 12 + MAX_LIGHTS * stride)
-                .order(ByteOrder.nativeOrder());
-
-        buf.putInt(GooseLightsClient.lights.size());
-        buf.putInt(0).putInt(0).putInt(0); // padding
-
-        for (int i = 0; i < MAX_LIGHTS; i++) {
-            if (i < GooseLightsClient.lights.size() && GooseLightsClient.lights.get(i).enabled) {
-                GooseLightsClient.lights.get(i).upload(buf);
-            } else {
-                for (int j = 0; j < stride / 4; j++) buf.putFloat(0f);
-            }
-        }
-
-        buf.flip();
-        GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "GooseLights UBO", buf.remaining(), buf);
-        colormap = buffer.slice();
+        Colormap.setColormap(renderPass);
     }
 }

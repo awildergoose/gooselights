@@ -5,7 +5,10 @@
 	"client": [
 		"TerrainPipelineMixin",
 		"SectionRenderStateMixin",
-		"WorldRendererSetWorldPosMixin"
+		"WorldRendererSetWorldPosMixin",
+		"FeatureRendererMixin",
+		"RenderLayerMultiPhaseMixin",
+		"MultiPhaseParametersAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
