@@ -8,21 +8,22 @@ import java.awt.*;
 import java.nio.ByteBuffer;
 
 @Environment(EnvType.CLIENT)
+@SuppressWarnings("unused")
 public class GPULight {
     public static final int TYPE_OMNI = 0;
     public static final int TYPE_SPOT = 1;
 
-    public Vector3f position;
-    public Color color;
-    public float radius;
-    public float intensity;
-    public boolean enabled;
+    private final Vector3f position;
+    private Color color;
+    private float radius;
+    private float intensity;
+    private boolean enabled;
 
     // spotlight-specific
-    public Vector3f forward = new Vector3f(0, -1, 0);
-    public float innerCutoff = (float)Math.cos(Math.toRadians(12.5));
-    public float outerCutoff = (float)Math.cos(Math.toRadians(17.5));
-    public int type;
+    private final Vector3f forward = new Vector3f(0, -1, 0);
+    private float innerCutoff = (float) Math.cos(Math.toRadians(12.5));
+    private float outerCutoff = (float) Math.cos(Math.toRadians(17.5));
+    private int type;
 
     public GPULight(Vector3f position, Color color, float radius, float intensity) {
         this.position = position;
@@ -40,6 +41,87 @@ public class GPULight {
         this.innerCutoff = (float)Math.cos(Math.toRadians(innerCutoffDeg));
         this.outerCutoff = (float)Math.cos(Math.toRadians(outerCutoffDeg));
         this.type = TYPE_SPOT;
+    }
+
+    public Vector3f getPosition() {
+        return new Vector3f(position);
+    }
+
+    public void setPosition(Vector3f position) {
+        this.position.set(position);
+        Colormap.markDirty();
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+        Colormap.markDirty();
+    }
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+        Colormap.markDirty();
+    }
+
+    public float getIntensity() {
+        return intensity;
+    }
+
+    public void setIntensity(float intensity) {
+        this.intensity = intensity;
+        Colormap.markDirty();
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        Colormap.markDirty();
+    }
+
+    public Vector3f getForward() {
+        return new Vector3f(forward);
+    }
+
+    public void setForward(Vector3f forward) {
+        this.forward.set(forward).normalize();
+        Colormap.markDirty();
+    }
+
+    public float getInnerCutoff() {
+        return innerCutoff;
+    }
+
+    public void setInnerCutoff(float degrees) {
+        this.innerCutoff = (float) Math.cos(Math.toRadians(degrees));
+        Colormap.markDirty();
+    }
+
+    public float getOuterCutoff() {
+        return outerCutoff;
+    }
+
+    public void setOuterCutoff(float degrees) {
+        this.outerCutoff = (float) Math.cos(Math.toRadians(degrees));
+        Colormap.markDirty();
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+        Colormap.markDirty();
     }
 
     public void upload(ByteBuffer buf) {

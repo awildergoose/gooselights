@@ -18,8 +18,10 @@ public class Colormap {
     private static boolean dirty = false;
 
     public static void setColormap(RenderPass renderPass) {
-        if (colormap == null || dirty)
+        if (colormap == null || dirty) {
             updateColormap();
+            dirty = false;
+        }
 
         renderPass.setUniform("GooseLights", colormap);
     }
@@ -58,7 +60,7 @@ public class Colormap {
         buf.putInt(0).putInt(0).putInt(0); // padding
 
         for (int i = 0; i < MAX_LIGHTS; i++) {
-            if (i < lights.size() && lights.get(i).enabled) {
+            if (i < lights.size() && lights.get(i).isEnabled()) {
                 lights.get(i).upload(buf);
             } else {
                 for (int j = 0; j < stride / 4; j++) buf.putFloat(0f);
