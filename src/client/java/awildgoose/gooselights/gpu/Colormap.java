@@ -4,6 +4,8 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.profiler.Profilers;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,17 +14,35 @@ import java.util.List;
 import static awildgoose.gooselights.GooseLightsClient.MAX_LIGHTS;
 
 public class Colormap {
-    public static int UPDATE_FREQUENCY = 2;
-    public static List<GPULight> lights = new java.util.ArrayList<>();
+    private static final List<GPULight> lights = new java.util.ArrayList<>();
+    private static boolean dirty = false;
 
     public static void setColormap(RenderPass renderPass) {
-        if (colormap == null || tickCounter % UPDATE_FREQUENCY == 0)
+        if (colormap == null || dirty)
             updateColormap();
 
         renderPass.setUniform("GooseLights", colormap);
     }
 
-    public static int tickCounter = 0;
+    public static void markDirty() {
+        dirty = true;
+    }
+
+    public static void addLight(GPULight light) {
+        lights.add(light);
+        markDirty();
+    }
+
+    public static void removeLight(GPULight light) {
+        lights.remove(light);
+        markDirty();
+    }
+
+    public static void clearLights() {
+        lights.clear();
+        markDirty();
+    }
+
     private static GpuBuffer buffer;
     private static GpuBufferSlice colormap;
 
@@ -30,6 +50,8 @@ public class Colormap {
         int stride = 64;
         int size = 4 + 12 + MAX_LIGHTS * stride;
 
+        Profiler profiler = Profilers.get();
+        profiler.push("gooselights");
         ByteBuffer buf = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
 
         buf.putInt(lights.size());
@@ -55,5 +77,6 @@ public class Colormap {
                 buf
         );
         colormap = buffer.slice();
+        profiler.pop();
     }
 }

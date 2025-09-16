@@ -40,6 +40,5 @@ public class SectionRenderStateMixin {
             RenderPass renderPass
     ) {
         Colormap.setColormap(renderPass);
-        Colormap.tickCounter++;
     }
 }

@@ -17,8 +17,8 @@ public class GooseLightsClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
-			Colormap.lights.clear();
-			Colormap.lights.add(new GPULight(new Vector3f(0, -60, 0), Color.RED, 15f, 15f));
+			Colormap.clearLights();
+			Colormap.addLight(new GPULight(new Vector3f(0, -60, 0), Color.RED, 15f, 15f));
 		});
 	}
 }
